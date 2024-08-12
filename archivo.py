@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat May 25 15:40:14 2024
-
 @author: Marcos
 """
+# -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Librerias usadas
+# -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 import numpy as np
 import pandas as pd
@@ -14,16 +15,17 @@ from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.model_selection import train_test_split, KFold, cross_val_score
 from sklearn.tree import DecisionTreeClassifier
 
-#%%
-# Importar archivo.csv
+# -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Directorio
+# -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 
 data = pd.read_csv('C:/Users/Marcos/Desktop/TP2 LDD/emnist_letters_tp.csv', header = None)
-#data = pd.read_csv("~/Documentos/Labo/Cursadas/Labo de Datos/tp2/emnist_letters_tp.csv", header= None)
-#%%
+data = pd.read_csv("~/Documentos/Labo/Cursadas/Labo de Datos/tp2/emnist_letters_tp.csv", header= None)
 
+# -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #       FUNCIONES ÚTILES
+# -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-#%%
 # Función para subsetear un data frame a columnas que tengan valores distintos de 0
 def filtrar_nulos(datos):
     columnas_a_eliminar = []
@@ -47,25 +49,25 @@ def flip_rotate(image):
     image = np.rot90(image)
     return image
 
-#%%
+# -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Limpieza de datos
+# -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 data = data.rename(columns={data.columns[0]: 'Letras'}) # Renombrar la primera columna como 'Letras'
 nombre_pixeles = {data.columns[i]: f'pixel_{i}' for i in range(1,785)} # Crear diccionario con los nombres de los píxeles
 data = data.rename(columns = nombre_pixeles) # Renombrar la columnas de los píxeles con sus nombres
-#%%######################
 
-        #### ej)1            Análisis exploratorio
+# -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Análisis exploratorio
+# -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#########################
-
-#%%
 # Cantidad de datos
 cant_de_datos = data.shape[0] # Shape devuelve en la primera posición [0] la cantidad de filas y en la segunda posición [1] la cantidad de columnas
-#%%
+
 # Cantidad y tipos de atributos
 # Tipo de atributos: Númericos
 cantidad_columnas = data.shape[1] 
 cant_de_atributos = cantidad_columnas - 1 # Los atributos son todas las columnas menos la variable de interés
-#%%
+
 # Cantidad de clases de la variable de interés (letras)
 letras_sin_repetidos = sql^"""
                             SELECT DISTINCT Letras
@@ -73,7 +75,7 @@ letras_sin_repetidos = sql^"""
                             ORDER BY Letras ASC
                            """
 cant_de_clases = letras_sin_repetidos.shape[0] # Cantidad de filas
-#%%
+
 # Distribución de muestras de cada letra
 distribution = data['Letras'].value_counts().sort_index()
 
@@ -83,26 +85,21 @@ plt.title('Distribución de las letras')
 plt.xlabel('Letras')
 plt.ylabel('Frecuencia')
 plt.show()
-#%%
 
 # Promedio global de todas las letras
 promedio_global = data.mean()
 
-#%%
 # Seleccionamos la letra "C" para observar la consistencia intraletra
-
 data_letra_c = sql^"""
                    SELECT *
                    FROM data 
                    WHERE Letras = 'C'"""
 
-#%%
 # Vemos la variabilidad con el desvío estandar:
 
 desvios_c = data_letra_c.std(axis=0).to_frame().T
 desvios_globales = data.std(axis=0).to_frame().T
 
-#%%
 image_array = np.array(desvios_c).astype(np.float32)
 
 plt.imshow(flip_rotate(image_array))
@@ -110,7 +107,6 @@ plt.title("Desvios estandar por pixel - Letra C")
 plt.axis('off')  
 plt.show()
 
-#%%
 image_array = np.array(desvios_globales).astype(np.float32)
 
 plt.imshow(flip_rotate(image_array))
@@ -118,7 +114,6 @@ plt.title("Desvios estandar por pixel - gobales")
 plt.axis('off')  
 plt.show()
 
-#%%
 # Seleccion de letras E, M y L para explorar similitud/diferencia
 # interletra, tomando la letra promedio, de los pixeles que no son 
 # universalmente 0 en todas las filas. 
@@ -153,7 +148,7 @@ data_letra_L = data_letra_L.mean()
 data_letra_L.name = "Letra L"
 
 data_letras_a_compararar = pd.DataFrame([data_letra_E,  data_letra_L, data_letra_M]).T
-#%%
+
 # Grafico scatter de los pixeles de una letra vs la otra para 
 # observar similitud
 
@@ -190,11 +185,9 @@ ax.set_xlabel("Letra E")
 ax.set_ylabel("Letra L")
 
 
-#%%
-
 # Letra promedio de cada letra
 promedio_de_cada_letra = data.groupby('Letras').mean().reset_index() # Realiza un groupby para agrupar cada letra y hace un promedio de cada pixel (dejaba la columna 'Letras' como index, por eso reseteamos el index)
-#%%
+
 # Calcular la moda del promedio de cada letra (No se realizó gráfico ya que era igual al de moda de cada una de las letras)
 moda_promedio = promedio_de_cada_letra.drop('Letras', axis = 1).mode(axis=1) # Descarta la columna 'Letras' y calcula la moda por cada letra
 moda_promedio = pd.concat([promedio_de_cada_letra['Letras'], moda_promedio], axis = 1) # Agrega la columna 'Letras'
@@ -202,7 +195,8 @@ moda_promedio.columns = ['Letras', 'moda']
 
 letras = moda_promedio['Letras'].tolist()
 moda = moda_promedio['moda'].tolist()
-#%% Graficar la moda por letra promedio
+
+# Graficar la moda por letra promedio
 plt.bar(letras, moda, color ='skyblue', edgecolor = 'black')
 
 plt.xlabel('Letras')
@@ -212,7 +206,7 @@ plt.title('Moda por letra')
 plt.xticks(rotation= 45)
 
 plt.show()
-#%%
+
 # Calcular la mediana del promedio de cada letra
 mediana_promedio = promedio_de_cada_letra.drop('Letras', axis = 1).median(axis = 1) # Descarta la columna 'Letras' y calcula la mediana de cada letra
 mediana_promedio = pd.concat([promedio_de_cada_letra['Letras'], mediana_promedio], axis = 1) # Agrega la columna 'Letras'
@@ -220,7 +214,7 @@ mediana_promedio.columns = ['Letras', 'mediana']
 
 letras = mediana_promedio['Letras']
 mediana_intensidad_pixel = mediana_promedio['mediana']
-#%%
+
 # Graficar la mediana por letra promedio
 plt.bar(letras, mediana_intensidad_pixel, color='skyblue', edgecolor='black')
 
@@ -231,7 +225,7 @@ plt.title(' Mediana por letra')
 plt.xticks(rotation=45)
 
 plt.show()
-#%%
+
 # Calcular la moda de cada una de las muestras de letras (No se realizó gráfico ya que era igual al calculado anteriormente)
 moda_muestras = data.drop('Letras', axis = 1).mode(axis = 1)
 moda_muestras = pd.concat([data['Letras'], moda_muestras], axis = 1)
@@ -239,7 +233,7 @@ moda_muestras.columns = ['Letras', 'moda']
 
 letras = moda_muestras['Letras']
 moda = moda_muestras['moda']
-#%%
+
 # Calcular la mediana de cada una de las muestras de letras
 mediana_muestras = data.drop('Letras', axis = 1).median(axis = 1)
 mediana_muestras = pd.concat([data['Letras'], mediana_muestras], axis = 1)
@@ -248,27 +242,19 @@ mediana_muestras.columns = ['Letras', 'mediana']
 letras = mediana_muestras['Letras']
 mediana = mediana_muestras['mediana']
 
-#%%######################
+# -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Clasificacion Binaria
+# -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# i) A partir del dataframe original, construir un nuevo dataframe que contenga sólo al subconjunto de imágenes correspondientes a las letras L o A.
 
-        #### ej)2       CLASIFICACIÓN BINARIA
-        
-#########################
-#%%
-#########################
-        ### a)
-#########################
-#%%
 # Subconjunto de imágenes correspondientes a las letras A y L
 subconjunto_data = sql^"""
                             SELECT *
                             FROM data
                             WHERE Letras = 'A' OR Letras = 'L'
                        """
-#%%
-########################
-        ### b)
-########################
-#%%
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# ii) Sobre este subconjunto de datos, analizar cuántas muestras se tienen y determinar si está balanceado con respecto a las dos clases a predecir (la imagen es de la letra L o de la letra A). 
 # Cantidad de muestras
 cant_muestras = subconjunto_data.shape[0]
 
@@ -297,11 +283,10 @@ plt.ylabel('Cantidad de muestras')
 plt.title('Balance de muestras')
 
 plt.show()
-#%%
-########################
-        ### c)
-########################
-#%%
+
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# iii) Separar los datos en conjuntos de train y test.
+
 #       SEPARACIÓN DE DATOS EN TRAIN Y TEST
 
 # Atributos
@@ -310,16 +295,13 @@ X = subconjunto_data.drop('Letras', axis = 1)
 y = subconjunto_data[['Letras']]
 # Separar el 80% para train y el 20% para test
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state=42)
-#%%
-#########################
-        ### d)
-#########################
-#%%
+
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# iv) Ajustar un modelo de KNN en los datos de train, considerando pocos atributos, por ejemplo 3. Probar con distintos conjuntos de 3 atributos y comparar resultados. 
+# Analizar utilizando otras cantidades de atributos. Para comparar los resultados de cada modelo usar el conjunto de test generado en el punto anterior.
 
 #       FUNCIONES ÚTILES
 
-
-#%%
 # Función para eliminar los elementos repetidos de una lista
 def eliminar_repetidos(lista):
     res = []
@@ -336,12 +318,8 @@ def eliminar_pixeles(df):
             res.append(columna)
     return res
 
-#%%
-
 #       PREPARACIÓN DE LOS DATOS
 
-
-#%%
 # Obtener los pixeles "claves" de la letra A 
 letra_promedio_A = sql^"""
                          SELECT *
@@ -370,11 +348,9 @@ pixeles_clave_L = eliminar_pixeles(letra_promedio_L)
 # Conjunto de pixeles claves de las letras A y L
 pixeles_clave = eliminar_repetidos(pixeles_clave_L + pixeles_clave_A)
 
-#%%
 
-        # MODELO KNN (3 atributos)
+#        MODELO KNN (3 atributos)
 
-#%%
 # Generar 5 conjuntos de 3 atributos clave seleccionando aleatoriamente
 conjuntos_de_3_atributos = [np.random.choice(pixeles_clave, size = 3, replace = False).tolist() for _ in range(0,5)] 
 
@@ -404,12 +380,8 @@ for atributo in conjuntos_de_3_atributos:
         })
 
 
-#%%
+#        MODELO KNN (10 atributos)
 
-        # MODELO KNN (10 atributos)
-
-
-#%%
 # Generar 5 conjuntos de 10 atributos clave seleccionando aleatoriamente
 conjuntos_de_10_atributos = [np.random.choice(pixeles_clave, size=10, replace=False ).tolist() for _ in range(0,5)]
 
@@ -437,13 +409,10 @@ for atributo in conjuntos_de_10_atributos:
         'atributos': atributo,
         'exactitud': exactitud
         })
-    
-#%%
-
-        # MODELO KNN (50 atributos)
 
 
-#%%
+#        MODELO KNN (50 atributos)
+
 # Generar 5 conjuntos de 50 atributos clave seleccionando aleatoriamente
 conjuntos_de_50_atributos = [np.random.choice(pixeles_clave, size=50, replace=False ).tolist() for _ in range(0,5)]
 
@@ -472,12 +441,9 @@ for atributo in conjuntos_de_50_atributos:
         'exactitud': exactitud
         })
 
-#%%
 
-        # MODELO KNN (100 atributos)
+#        MODELO KNN (100 atributos)
 
-
-#%%
 # Generar 5 conjuntos de 100 atributos clave seleccionando aleatoriamente
 conjuntos_de_100_atributos = [np.random.choice(pixeles_clave, size=100, replace=False ).tolist() for _ in range(0,5)]
 
@@ -506,12 +472,9 @@ for atributo in conjuntos_de_100_atributos:
         'exactitud': exactitud
         })
 
-#%%
 
-        # MODELO KNN (300 atributos)
+#        MODELO KNN (300 atributos)
 
-
-#%%
 # Generar 5 conjuntos de 300 atributos clave seleccionando aleatoriamente
 conjuntos_de_300_atributos = [np.random.choice(pixeles_clave, size=300, replace=False ).tolist() for _ in range(0,5)]
 
@@ -540,12 +503,9 @@ for atributo in conjuntos_de_300_atributos:
         'exactitud': exactitud
         })
     
-#%%
 
-        # MODELO KNN (500 atributos)
+#        MODELO KNN (500 atributos)
 
-
-#%%
 # Generar 5 conjuntos de 500 atributos clave seleccionando aleatoriamente
 conjuntos_de_500_atributos = [np.random.choice(pixeles_clave, size=500, replace=False ).tolist() for _ in range(0,5)]
 
@@ -575,14 +535,10 @@ for atributo in conjuntos_de_500_atributos:
         })
 
     
-#%%
-##############################################
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Visualizacion de exactitudes por cantidad de atributos
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#       Visualización de exactitudes por cantidad de atributos
-
-##############################################
-
-#%%
 # cantidad de atributos (eje x)
 cant_atributos = [3, 10, 50, 100, 300, 500]
 
@@ -607,20 +563,15 @@ plt.xlabel('Cantidad atributos')
 plt.ylabel('Exactitud (accuracy)')
 plt.grid(True)
 
-#%%
-#########################
-        ### e)
-#########################
-#%%
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# v) Comparar modelos de KNN utilizando distintos atributos y distintos valores de k (vecinos). Para el análisis de los resultados,
+# tener en cuenta las medidas de evaluación (por ejemplo, la exactitud) y la cantidad de atributos.
+
 # cantidad de vecinos a probar (del 1 al 50)
 cant_de_vecinos = range(1,51)
 
-#%%
+#        MODELO KNN (3 atributos) para diferentes k
 
-        # MODELO KNN (3 atributos) para diferentes k
-
-
-#%%
 # Lista para almacenar los atributos y sus exactitudes con sus k
 res_3_atributos = []
 
@@ -652,12 +603,10 @@ for atributos in conjuntos_de_3_atributos:
 # Convertir a dataframe y luego obtener una lista con las exactitudes promedio por k
 res_3_atributos = pd.DataFrame(res_3_atributos)
 exact_3_atributos = res_3_atributos.groupby('k').mean('exactitud').reset_index()['exactitud'].tolist()
-#%%
 
-        # MODELO KNN (50 atributos) para diferentes k
-        
 
-#%%
+#        MODELO KNN (50 atributos) para diferentes k
+
 # Lista para almacenar los atributos y sus exactitudes con sus k
 res_50_atributos = []
 
@@ -689,12 +638,10 @@ for atributos in conjuntos_de_50_atributos:
 # Convertir a dataframe y luego obtener una lista con las exactitudes promedio por k
 res_50_atributos = pd.DataFrame(res_50_atributos)
 exact_50_atributos = res_50_atributos.groupby('k').mean('exactitud').reset_index()['exactitud'].tolist()
-#%%
 
-        # MODELO KNN (100 atributos) para diferentes k
+
+#        MODELO KNN (100 atributos) para diferentes k
         
-
-#%%
 # Lista para almacenar los atributos y sus exactitudes con sus k
 res_100_atributos = []
 
@@ -727,12 +674,9 @@ for atributos in conjuntos_de_100_atributos:
 res_100_atributos = pd.DataFrame(res_100_atributos)
 exact_100_atributos = res_100_atributos.groupby('k').mean('exactitud').reset_index()['exactitud'].tolist()
 
-#%%
 
-        # MODELO KNN (300 atributos) para diferentes k
-        
+#        MODELO KNN (300 atributos) para diferentes k
 
-#%%
 # Lista para almacenar los atributos y sus exactitudes con sus k
 res_300_atributos = []
 
@@ -764,13 +708,10 @@ for atributos in conjuntos_de_300_atributos:
 # Convertir a dataframe y luego obtener una lista con las exactitudes promedio por k
 res_300_atributos = pd.DataFrame(res_300_atributos)
 exact_300_atributos = res_300_atributos.groupby('k').mean('exactitud').reset_index()['exactitud'].tolist()
-#%%
-##############################################
 
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #       Visualización de exactitud por cantidad de vecinos para diferentes cantidades de atributos
-
-##############################################
-#%%
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Crear gráfico
 plt.plot(cant_de_vecinos,exact_50_atributos,marker="*")
@@ -782,23 +723,20 @@ plt.ylabel('Exactitud (accuracy)')
 plt.xticks(ticks=cant_de_vecinos[1::2])
 plt.legend(['50 atrib.', '100 atrib.', '300 atrib.'])
 plt.grid(True)
-#%%######################
 
-        #### ej)3
-        
-#########################
-#%%
-#########################
-# a)
-#########################
-#%%
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Clasificacion Multiclase
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# i) Vamos a trabajar con los datos correspondientes a las 5 vocales. Primero filtrar solo los datos correspondientes a esas letras. Luego, separar el conjunto de datos en desarrollo (dev) y validación (held-out).
+# Para los incisos b y c, utilizar el conjunto de datos de desarrollo. Dejar apartado el conjunto held-out en estos incisos.
+
 # DataFrame solo con vocales
 data_con_vocales = sql^"""
                         SELECT *
                         FROM data
                         WHERE Letras = 'A' OR Letras = 'E' OR Letras = 'I' OR Letras = 'O' OR Letras = 'U'
                        """
-#%%
+
 # atributos
 x = data_con_vocales.drop(['Letras'], axis = 1)
 # variable de interés
@@ -806,11 +744,9 @@ y = data_con_vocales['Letras']
 # Separar el subconjunto de datos en desarrollo y validación (80% dev y 20% eval)
 x_dev, x_eval, y_dev, y_eval = train_test_split(x,y, random_state = 42,test_size=0.2)
 
-#%%
-#########################
-# b)
-#########################
-#%% 
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# ii) Ajustar un modelo de árbol de decisión. Probar con distintas profundidades.
+ 
 # Diferentes profundidades del arbol
 profundidades = [1,2,3,5,10,13,15, 20, 25, 45]
 # Separar el desarrollo en conjuntos de test y train
@@ -851,11 +787,10 @@ plt.grid(True)
 plt.show()
 
 
-#%%
-#########################
-# c)
-#########################
-#%%
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# iii) Realizar un experimento para comparar y seleccionar distintos árboles de decisión, con distintos hiperparámetos. Para esto, utilizar validación cruzada con k-folding.
+# ¿Cuál fue el mejor modelo? Documentar cuál configuración de hiperparámetros es la mejor, y qué performance tiene.
+
 # Lista de hiperparametros para luego combinar
 hiperparametros = {
     'profundidad': [1,3,5,10,13,15],
@@ -894,11 +829,9 @@ print("Mejor modelo:", mejor_modelo)
 print("Y su exactitud:", mejor_exactitud)            
 print("\n")           
 
-#%%
-#########################
-# d)
-#########################
-#%%
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# iv) Entrenar el modelo elegido a partir del inciso previo, ahora en todo el conjunto de desarrollo. Utilizarlo para predecir las clases en el conjunto held-out y reportar la performance.
+
 # Entrenar el modelo elegido en todo el conjunto de desarrollo
 mejor_modelo.fit(x_dev, y_dev)
 
